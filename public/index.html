@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UnD</title>
+</head>
+<body>
+
+<h1>Unemployment Data</h1>
+
+<button onclick="loadData()">Load Data</button>
+
+<pre id="output"></pre>
+
+<script>
+function loadData() {
+    fetch('../api/getData.php')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        });
+}
+</script>
+
+</body>
+</html>
