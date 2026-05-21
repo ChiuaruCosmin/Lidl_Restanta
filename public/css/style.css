@@ -1,8 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #222222;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    border: 1px solid #dddddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+}
+
+h1,
+h2,
+h3 {
+    margin-top: 0;
+}
+
 .filters {
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
-    align-items: end;
+    align-items: flex-end;
 }
 
 .filters div {
@@ -10,9 +37,105 @@
     flex-direction: column;
 }
 
-input[type="month"] {
+.filters small {
+    margin-top: 5px;
+    color: #666666;
+    font-size: 12px;
+}
+
+select,
+input[type="month"],
+button {
     padding: 8px;
-    min-width: 160px;
+    font-size: 14px;
+}
+
+button {
+    cursor: pointer;
+}
+
+select[multiple] {
+    min-width: 220px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.stat-box {
+    border: 1px solid #dddddd;
+    padding: 15px;
+    background-color: #f8f8f8;
+}
+
+.stat-label {
+    display: block;
+    font-size: 14px;
+    color: #555555;
+    margin-bottom: 8px;
+}
+
+.stat-box strong {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.stat-box small {
+    color: #666666;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+
+.chart-box {
+    border: 1px solid #dddddd;
+    padding: 15px;
+    background-color: #ffffff;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+.pie-wrapper {
+    height: 300px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border-bottom: 1px solid #dddddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+@media (max-width: 900px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 700px) {
@@ -22,5 +145,15 @@ input[type="month"] {
 
     .filters div {
         margin-bottom: 10px;
+    }
+
+    select[multiple] {
+        width: 100%;
+    }
+}
+
+@media (max-width: 500px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }

@@ -16,10 +16,10 @@
 
         <div class="filters">
             <div>
-                <label for="judetSelect">Judet:</label>
-                <select id="judetSelect">
-                    <option value="">Toate judetele</option>
+                <label for="judetSelect">Judete:</label>
+                <select id="judetSelect" multiple size="6">
                 </select>
+                <small>Tine apasat Ctrl pentru a selecta mai multe judete.</small>
             </div>
 
             <div>
@@ -33,6 +33,61 @@
             </div>
 
             <button id="filterButton">Aplica filtre</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Statistici</h2>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <span class="stat-label">Total someri</span>
+                <strong id="totalSomeri">-</strong>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Rata medie</span>
+                <strong id="rataMedie">-</strong>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Rata maxima</span>
+                <strong id="rataMaxima">-</strong>
+                <small id="rataMaximaInfo">-</small>
+            </div>
+
+            <div class="stat-box">
+                <span class="stat-label">Rata minima</span>
+                <strong id="rataMinima">-</strong>
+                <small id="rataMinimaInfo">-</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Vizualizari</h2>
+
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h3>Rata somajului pe judete</h3>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <h3>Evolutie rata somajului in timp</h3>
+                <div class="chart-wrapper">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-box">
+                <h3>Someri femei / barbati</h3>
+                <div class="chart-wrapper pie-wrapper">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -56,6 +111,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
