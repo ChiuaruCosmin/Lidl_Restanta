@@ -1,44 +1,90 @@
 <?php
-require_once("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 
-$file = fopen("../data/somaj.csv", "r");
+function cleanNumber($value) {
+    $value = trim($value);
+    $value = str_replace(".", "", $value);
+    $value = str_replace(",", ".", $value);
+    $value = preg_replace('/[^0-9.]/', '', $value);
+
+    if ($value === "") {
+        return 0;
+    }
+
+    return floatval($value);
+}
+
+$file = fopen(__DIR__ . "/../data/somaj.csv", "r");
 
 if (!$file) {
-    die("Nu pot deschide fisierul!");
+    die("Nu pot deschide fisierul CSV.");
 }
 
 $db->exec("DELETE FROM unemployment");
 
+// sarim peste header
 fgets($file);
 
-while (($line = fgets($file)) !== false) {
+$insert = $db->prepare("
+    INSERT INTO unemployment (
+        judet,
+        luna,
+        numar_total,
+        numar_femei,
+        numar_barbati,
+        numar_indemnizati,
+        numar_neindemnizati,
+        rata,
+        rata_feminina,
+        rata_masculina,
+        varsta,
+        educatie,
+        mediu
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', '', '')
+");
 
+while (($line = fgets($file)) !== false) {
     $data = explode(";", $line);
 
-    // verificare linie valida
-    if (count($data) < 7) continue;
+    if (count($data) < 10) {
+        continue;
+    }
 
     $judet = trim($data[0]);
 
-    // ignoram total si linii goale
-    if ($judet == "" || $judet == "Total") continue;
+    if ($judet === "" || strtolower($judet) === "total") {
+        continue;
+    }
 
-    $rata = trim($data[6]);
-
-    // transformam 3,60 -> 3.60
-    $rata = str_replace(",", ".", $rata);
-    $rata = floatval($rata);
-
-    // luna fixa (din titlu dataset)
+    // momentan avem un singur CSV, deci luna ramane fixa
+    // cand adaugam mai multe luni, o sa citim luna din numele fisierului
     $luna = "2025-05";
 
-    $stmt = $db->prepare("INSERT INTO unemployment (judet, luna, rata, varsta, educatie, mediu)
-                          VALUES (?, ?, ?, '', '', '')");
+    $numarTotal = intval(cleanNumber($data[1]));
+    $numarFemei = intval(cleanNumber($data[2]));
+    $numarBarbati = intval(cleanNumber($data[3]));
+    $numarIndemnizati = intval(cleanNumber($data[4]));
+    $numarNeindemnizati = intval(cleanNumber($data[5]));
 
-    $stmt->execute([$judet, $luna, $rata]);
+    $rata = cleanNumber($data[6]);
+    $rataFeminina = cleanNumber($data[7]);
+    $rataMasculina = cleanNumber($data[8]);
+
+    $insert->execute([
+        $judet,
+        $luna,
+        $numarTotal,
+        $numarFemei,
+        $numarBarbati,
+        $numarIndemnizati,
+        $numarNeindemnizati,
+        $rata,
+        $rataFeminina,
+        $rataMasculina
+    ]);
 }
 
 fclose($file);
 
-echo "Import terminat!";
+echo "Import terminat.";
 ?>

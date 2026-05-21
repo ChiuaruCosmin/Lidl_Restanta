@@ -1,65 +1,104 @@
-let toateDatele = [];
-
 function loadData() {
+    let judet = document.getElementById("judetSelect").value;
+    let lunaStart = document.getElementById("lunaStart").value;
+    let lunaEnd = document.getElementById("lunaEnd").value;
+
+    let params = new URLSearchParams();
+
+    if (judet !== "") {
+        params.append("judet", judet);
+    }
+
+    if (lunaStart !== "") {
+        params.append("luna_start", lunaStart);
+    }
+
+    if (lunaEnd !== "") {
+        params.append("luna_end", lunaEnd);
+    }
+
+    fetch("../api/getData.php?" + params.toString())
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            afiseazaDate(data);
+        })
+        .catch(function(error) {
+            console.log("Eroare la incarcarea datelor:", error);
+        });
+}
+
+function loadInitialData() {
     fetch("../api/getData.php")
         .then(function(response) {
             return response.json();
         })
         .then(function(data) {
-            toateDatele = data;
             puneJudeteInSelect(data);
             afiseazaDate(data);
+        })
+        .catch(function(error) {
+            console.log("Eroare la incarcarea datelor:", error);
         });
 }
 
 function puneJudeteInSelect(data) {
     let select = document.getElementById("judetSelect");
-
-    if (select.options.length > 1) {
-        return;
-    }
+    let judeteExistente = [];
 
     for (let i = 0; i < data.length; i++) {
-        let option = document.createElement("option");
-        option.value = data[i].judet;
-        option.textContent = data[i].judet;
-        select.appendChild(option);
+        let judet = data[i].judet;
+
+        if (!judeteExistente.includes(judet)) {
+            judeteExistente.push(judet);
+
+            let option = document.createElement("option");
+            option.value = judet;
+            option.textContent = judet;
+            select.appendChild(option);
+        }
     }
 }
 
 function afiseazaDate(data) {
     let body = document.getElementById("dataBody");
-    body.innerHTML = "";
+    body.textContent = "";
 
     for (let i = 0; i < data.length; i++) {
         let row = document.createElement("tr");
 
-        row.innerHTML =
-            "<td>" + data[i].judet + "</td>" +
-            "<td>" + data[i].luna + "</td>" +
-            "<td>" + data[i].rata + "</td>";
+        let judetCell = document.createElement("td");
+        judetCell.textContent = data[i].judet;
+
+        let lunaCell = document.createElement("td");
+        lunaCell.textContent = data[i].luna;
+
+        let totalCell = document.createElement("td");
+        totalCell.textContent = data[i].numar_total;
+
+        let femeiCell = document.createElement("td");
+        femeiCell.textContent = data[i].numar_femei;
+
+        let barbatiCell = document.createElement("td");
+        barbatiCell.textContent = data[i].numar_barbati;
+
+        let rataCell = document.createElement("td");
+        rataCell.textContent = data[i].rata;
+
+        row.appendChild(judetCell);
+        row.appendChild(lunaCell);
+        row.appendChild(totalCell);
+        row.appendChild(femeiCell);
+        row.appendChild(barbatiCell);
+        row.appendChild(rataCell);
 
         body.appendChild(row);
     }
 }
 
-document.getElementById("judetSelect").addEventListener("change", function() {
-    let judetAles = this.value;
-
-    if (judetAles == "") {
-        afiseazaDate(toateDatele);
-        return;
-    }
-
-    let dateFiltrate = [];
-
-    for (let i = 0; i < toateDatele.length; i++) {
-        if (toateDatele[i].judet == judetAles) {
-            dateFiltrate.push(toateDatele[i]);
-        }
-    }
-
-    afiseazaDate(dateFiltrate);
+document.getElementById("filterButton").addEventListener("click", function() {
+    loadData();
 });
 
-loadData();
+loadInitialData();

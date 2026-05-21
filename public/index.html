@@ -9,16 +9,31 @@
 
 <div class="container">
     <h1>UnD - Unemployment Data Visualizer</h1>
-    <p>Vizualizare date despre somajul din Romania</p>
+    <p>Vizualizare date publice despre somajul din Romania</p>
 
     <div class="card">
-        <label for="judetSelect">Alege judet:</label>
+        <h2>Filtre</h2>
 
-        <select id="judetSelect">
-            <option value="">Toate judetele</option>
-        </select>
+        <div class="filters">
+            <div>
+                <label for="judetSelect">Judet:</label>
+                <select id="judetSelect">
+                    <option value="">Toate judetele</option>
+                </select>
+            </div>
 
-        <button onclick="loadData()">Afiseaza date</button>
+            <div>
+                <label for="lunaStart">Luna inceput:</label>
+                <input type="month" id="lunaStart">
+            </div>
+
+            <div>
+                <label for="lunaEnd">Luna final:</label>
+                <input type="month" id="lunaEnd">
+            </div>
+
+            <button id="filterButton">Aplica filtre</button>
+        </div>
     </div>
 
     <div class="card">
@@ -29,6 +44,9 @@
                 <tr>
                     <th>Judet</th>
                     <th>Luna</th>
+                    <th>Total someri</th>
+                    <th>Femei</th>
+                    <th>Barbati</th>
                     <th>Rata somajului (%)</th>
                 </tr>
             </thead>

@@ -1,8 +1,36 @@
 <?php
-require_once("../config/db.php");
+require_once(__DIR__ . "/../config/db.php");
 
-$stmt = $db->query("SELECT * FROM unemployment LIMIT 50");
+header('Content-Type: application/json; charset=utf-8');
+
+$judet = isset($_GET["judet"]) ? trim($_GET["judet"]) : "";
+$lunaStart = isset($_GET["luna_start"]) ? trim($_GET["luna_start"]) : "";
+$lunaEnd = isset($_GET["luna_end"]) ? trim($_GET["luna_end"]) : "";
+
+$sql = "SELECT * FROM unemployment WHERE 1 = 1";
+$params = [];
+
+if ($judet !== "") {
+    $sql .= " AND judet = ?";
+    $params[] = $judet;
+}
+
+if ($lunaStart !== "") {
+    $sql .= " AND luna >= ?";
+    $params[] = $lunaStart;
+}
+
+if ($lunaEnd !== "") {
+    $sql .= " AND luna <= ?";
+    $params[] = $lunaEnd;
+}
+
+$sql .= " ORDER BY luna ASC, judet ASC";
+
+$stmt = $db->prepare($sql);
+$stmt->execute($params);
+
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-header('Content-Type: application/json');
 echo json_encode($data);
+?>
