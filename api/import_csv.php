@@ -1,10 +1,26 @@
 <?php
 require_once(__DIR__ . "/../config/db.php");
 
-function cleanNumber($value) {
+function cleanInteger($value) {
     $value = trim($value);
-    $value = str_replace(".", "", $value);
-    $value = str_replace(",", ".", $value);
+    $value = str_replace([".", ",", " "], "", $value);
+    $value = preg_replace('/[^0-9]/', '', $value);
+
+    if ($value === "") {
+        return 0;
+    }
+
+    return intval($value);
+}
+
+function cleanRate($value) {
+    $value = trim($value);
+    $value = str_replace(" ", "", $value);
+
+    if (strpos($value, ",") !== false && strpos($value, ".") === false) {
+        $value = str_replace(",", ".", $value);
+    }
+
     $value = preg_replace('/[^0-9.]/', '', $value);
 
     if ($value === "") {
@@ -14,16 +30,38 @@ function cleanNumber($value) {
     return floatval($value);
 }
 
-$file = fopen(__DIR__ . "/../data/somaj.csv", "r");
+function getMonthFromFileName($filePath) {
+    $fileName = basename($filePath);
 
-if (!$file) {
-    die("Nu pot deschide fisierul CSV.");
+    if (preg_match('/somaj_(\d{4})_(\d{2})\.csv/', $fileName, $matches)) {
+        return $matches[1] . "-" . $matches[2];
+    }
+
+    return null;
 }
 
-$db->exec("DELETE FROM unemployment");
+function detectDelimiter($filePath) {
+    $firstLine = fgets(fopen($filePath, "r"));
 
-// sarim peste header
-fgets($file);
+    $semicolonCount = substr_count($firstLine, ";");
+    $commaCount = substr_count($firstLine, ",");
+
+    if ($semicolonCount >= $commaCount) {
+        return ";";
+    }
+
+    return ",";
+}
+
+$csvFiles = glob(__DIR__ . "/../data/somaj_*.csv");
+
+if (!$csvFiles || count($csvFiles) === 0) {
+    die("Nu exista fisiere CSV in folderul data.\n");
+}
+
+sort($csvFiles);
+
+$db->exec("DELETE FROM unemployment");
 
 $insert = $db->prepare("
     INSERT INTO unemployment (
@@ -43,48 +81,72 @@ $insert = $db->prepare("
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', '', '')
 ");
 
-while (($line = fgets($file)) !== false) {
-    $data = explode(";", $line);
+$totalImported = 0;
 
-    if (count($data) < 10) {
+foreach ($csvFiles as $csvFile) {
+    $luna = getMonthFromFileName($csvFile);
+
+    if ($luna === null) {
+        echo "Fisier ignorat: " . basename($csvFile) . "\n";
         continue;
     }
 
-    $judet = trim($data[0]);
+    $delimiter = detectDelimiter($csvFile);
 
-    if ($judet === "" || strtolower($judet) === "total") {
+    $file = fopen($csvFile, "r");
+
+    if (!$file) {
+        echo "Nu pot deschide fisierul: " . basename($csvFile) . "\n";
         continue;
     }
 
-    // momentan avem un singur CSV, deci luna ramane fixa
-    // cand adaugam mai multe luni, o sa citim luna din numele fisierului
-    $luna = "2025-05";
+    fgetcsv($file, 0, $delimiter);
 
-    $numarTotal = intval(cleanNumber($data[1]));
-    $numarFemei = intval(cleanNumber($data[2]));
-    $numarBarbati = intval(cleanNumber($data[3]));
-    $numarIndemnizati = intval(cleanNumber($data[4]));
-    $numarNeindemnizati = intval(cleanNumber($data[5]));
+    $rowsForFile = 0;
 
-    $rata = cleanNumber($data[6]);
-    $rataFeminina = cleanNumber($data[7]);
-    $rataMasculina = cleanNumber($data[8]);
+    while (($data = fgetcsv($file, 0, $delimiter)) !== false) {
+        if (count($data) < 9) {
+            continue;
+        }
 
-    $insert->execute([
-        $judet,
-        $luna,
-        $numarTotal,
-        $numarFemei,
-        $numarBarbati,
-        $numarIndemnizati,
-        $numarNeindemnizati,
-        $rata,
-        $rataFeminina,
-        $rataMasculina
-    ]);
+        $judet = trim($data[0]);
+        $judet = preg_replace('/^\xEF\xBB\xBF/', '', $judet);
+
+        if ($judet === "" || strtolower($judet) === "total") {
+            continue;
+        }
+
+        $numarTotal = cleanInteger($data[1]);
+        $numarFemei = cleanInteger($data[2]);
+        $numarBarbati = cleanInteger($data[3]);
+        $numarIndemnizati = cleanInteger($data[4]);
+        $numarNeindemnizati = cleanInteger($data[5]);
+
+        $rata = cleanRate($data[6]);
+        $rataFeminina = cleanRate($data[7]);
+        $rataMasculina = cleanRate($data[8]);
+
+        $insert->execute([
+            $judet,
+            $luna,
+            $numarTotal,
+            $numarFemei,
+            $numarBarbati,
+            $numarIndemnizati,
+            $numarNeindemnizati,
+            $rata,
+            $rataFeminina,
+            $rataMasculina
+        ]);
+
+        $rowsForFile++;
+        $totalImported++;
+    }
+
+    fclose($file);
+
+    echo "Importat " . basename($csvFile) . " - randuri: " . $rowsForFile . "\n";
 }
 
-fclose($file);
-
-echo "Import terminat.";
+echo "Import terminat. Total randuri importate: " . $totalImported . "\n";
 ?>
