@@ -296,12 +296,58 @@ document.getElementById("filterButton").addEventListener("click", function() {
     loadData();
 });
 
+function exportSVG() {
+    let charts = [
+        document.getElementById("barChart"),
+        document.getElementById("lineChart"),
+        document.getElementById("pieChart")
+    ];
+
+    let totalHeight = 0;
+    let maxWidth = 0;
+
+    for (let i = 0; i < charts.length; i++) {
+        totalHeight += charts[i].height + 10;
+        if (charts[i].width > maxWidth) {
+            maxWidth = charts[i].width;
+        }
+    }
+
+    let svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + maxWidth + '" height="' + totalHeight + '">'];
+
+    let yOffset = 0;
+    for (let i = 0; i < charts.length; i++) {
+        let c = charts[i];
+        svgParts.push('<image href="' + c.toDataURL("image/png") + '" x="0" y="' + yOffset + '" width="' + c.width + '" height="' + c.height + '"/>');
+        yOffset += c.height + 10;
+    }
+
+    svgParts.push("</svg>");
+
+    let blob = new Blob([svgParts.join("\n")], { type: "image/svg+xml" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "grafice_somaj.svg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+}
+
 document.getElementById("exportCsvBtn").addEventListener("click", function() {
     exportData("csv");
 });
 
 document.getElementById("exportJsonBtn").addEventListener("click", function() {
     exportData("json");
+});
+
+document.getElementById("exportSvgBtn").addEventListener("click", function() {
+    exportSVG();
+});
+
+document.getElementById("exportPdfBtn").addEventListener("click", function() {
+    window.print();
 });
 
 loadInitialData();

@@ -138,6 +138,32 @@ th {
     background-color: #f2f2f2;
 }
 
+@media print {
+    .filters,
+    .export-buttons,
+    table {
+        display: none;
+    }
+
+    .card {
+        border: none;
+        break-inside: avoid;
+    }
+
+    .charts-grid {
+        display: block;
+    }
+
+    .chart-box {
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+
+    .chart-wrapper {
+        height: 220px;
+    }
+}
+
 @media (max-width: 900px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
