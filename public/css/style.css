@@ -116,6 +116,12 @@ select[multiple] {
     height: 100% !important;
 }
 
+.export-buttons {
+    margin-bottom: 12px;
+    display: flex;
+    gap: 10px;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

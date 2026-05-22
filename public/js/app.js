@@ -280,8 +280,28 @@ function deseneazaPieChart(data) {
     });
 }
 
+function exportData(format) {
+    let params = buildParams();
+    params.append("format", format);
+
+    let a = document.createElement("a");
+    a.href = "../api/export.php?" + params.toString();
+    a.download = "somaj_export." + format;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
 document.getElementById("filterButton").addEventListener("click", function() {
     loadData();
+});
+
+document.getElementById("exportCsvBtn").addEventListener("click", function() {
+    exportData("csv");
+});
+
+document.getElementById("exportJsonBtn").addEventListener("click", function() {
+    exportData("json");
 });
 
 loadInitialData();
