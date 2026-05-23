@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UnD - Unemployment Data Visualizer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -93,6 +94,17 @@
     </div>
 
     <div class="card">
+        <h2>Harta somajului pe judete</h2>
+        <p id="mapLuna" class="map-luna"></p>
+        <div id="mapContainer"></div>
+        <div class="map-legenda">
+            <span>Rata mica</span>
+            <div class="legenda-gradient"></div>
+            <span>Rata mare</span>
+        </div>
+    </div>
+
+    <div class="card">
         <h2>Rezultate</h2>
 
         <div class="export-buttons">
@@ -119,9 +131,8 @@
     </div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/app.js"></script>
 </body>
-</html>git add public/index.html public/js/app.js public/css/style.css
-git commit -m "Adaugat export SVG si PDF"
-git push
+</html>

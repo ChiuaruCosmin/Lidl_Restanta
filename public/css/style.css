@@ -116,6 +116,33 @@ select[multiple] {
     height: 100% !important;
 }
 
+#mapContainer {
+    height: 450px;
+    width: 100%;
+}
+
+.map-luna {
+    color: #666666;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.map-legenda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.legenda-gradient {
+    width: 200px;
+    height: 14px;
+    background: linear-gradient(to right, #ffffb2, #fd8d3c, #bd0026);
+    border: 1px solid #dddddd;
+}
+
+
 .export-buttons {
     margin-bottom: 12px;
     display: flex;
