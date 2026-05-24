@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - UnD</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <style>
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .admin-header a {
+            font-size: 14px;
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #222;
+            background: #f2f2f2;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .stats-table th,
+        .stats-table td {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+        .stats-table th { background: #f2f2f2; }
+        #importOutput {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 12px;
+        }
+        #importBtn { margin-top: 10px; }
+        #importBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="admin-header">
+        <h1>Admin - UnD</h1>
+        <div>
+            <a href="../public/index.html">Inapoi la aplicatie</a>
+            <a id="logoutBtn">Deconectare</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Statistici baza de date</h2>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Set de date</th>
+                    <th>Randuri</th>
+                    <th>Prima luna</th>
+                    <th>Ultima luna</th>
+                </tr>
+            </thead>
+            <tbody id="statsBody">
+                <tr><td colspan="4">Se incarca...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Reimport CSV</h2>
+        <p>Reimporta toate fisierele CSV din folderul <strong>data/</strong> in baza de date. Datele existente vor fi inlocuite.</p>
+        <button id="importBtn">Porneste reimport</button>
+        <div id="importOutput"></div>
+    </div>
+</div>
+
+<script>
+function loadStats() {
+    fetch('../api/admin_stats.php')
+        .then(function(r) {
+            if (r.status === 403) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            if (!data) return;
+            var tbody = document.getElementById('statsBody');
+            if (!Array.isArray(data)) {
+                tbody.innerHTML = '<tr><td colspan="4">Eroare la incarcare.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            data.forEach(function(row) {
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + row.label + '</td>' +
+                    '<td>' + row.nr_randuri + '</td>' +
+                    '<td>' + (row.luna_start || '-') + '</td>' +
+                    '<td>' + (row.luna_end || '-') + '</td>';
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(function() {
+            document.getElementById('statsBody').innerHTML = '<tr><td colspan="4">Eroare la incarcare.</td></tr>';
+        });
+}
+
+document.getElementById('importBtn').addEventListener('click', function() {
+    var btn = this;
+    var output = document.getElementById('importOutput');
+    btn.disabled = true;
+    btn.textContent = 'Se importa...';
+    output.style.display = 'block';
+    output.textContent = 'Se ruleaza importul...';
+
+    fetch('../api/admin_import.php', { method: 'POST' })
+        .then(function(r) {
+            if (r.status === 403) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            if (!data) return;
+            if (data.output) {
+                output.textContent = data.output;
+            } else if (data.error) {
+                output.textContent = 'Eroare: ' + data.error;
+            }
+            btn.disabled = false;
+            btn.textContent = 'Porneste reimport';
+            loadStats();
+        })
+        .catch(function() {
+            output.textContent = 'Eroare la import.';
+            btn.disabled = false;
+            btn.textContent = 'Porneste reimport';
+        });
+});
+
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    fetch('../api/admin_logout.php', { method: 'POST' })
+        .then(function() {
+            window.location.href = 'login.html';
+        });
+});
+
+loadStats();
+</script>
+</body>
+</html>
