@@ -143,6 +143,33 @@ select[multiple] {
 }
 
 
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    cursor: pointer;
+    border: 1px solid #dddddd;
+    background: #f2f2f2;
+    font-size: 14px;
+}
+
+.tab-btn.active {
+    background: #333333;
+    color: #ffffff;
+    border-color: #333333;
+}
+
+.tab-info {
+    color: #888888;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
 .export-buttons {
     margin-bottom: 12px;
     display: flex;

@@ -294,6 +294,218 @@ function exportData(format) {
     document.body.removeChild(a);
 }
 
+var mediiBarChart   = null;
+var mediiPieChart   = null;
+var varsteChart     = null;
+var educatieChart   = null;
+
+function setTableHeader(coloane) {
+    var head = document.getElementById("tableHead");
+    var tr = document.createElement("tr");
+    for (var i = 0; i < coloane.length; i++) {
+        var th = document.createElement("th");
+        th.textContent = coloane[i];
+        tr.appendChild(th);
+    }
+    head.innerHTML = "";
+    head.appendChild(tr);
+}
+
+function afiseazaDateMedii(data) {
+    setTableHeader(["Judet", "Luna", "Urban Total", "Urban Femei", "Urban Barbati", "Rural Total", "Rural Femei", "Rural Barbati"]);
+    var body = document.getElementById("dataBody");
+    body.innerHTML = "";
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var tr = document.createElement("tr");
+        var vals = [r.judet, r.luna, r.urban_total, r.urban_femei, r.urban_barbati, r.rural_total, r.rural_femei, r.rural_barbati];
+        for (var j = 0; j < vals.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = vals[j];
+            tr.appendChild(td);
+        }
+        body.appendChild(tr);
+    }
+}
+
+function afiseazaDateVarste(data) {
+    setTableHeader(["Judet", "Luna", "Sub 25", "25-29", "30-39", "40-49", "50-55", "Peste 55"]);
+    var body = document.getElementById("dataBody");
+    body.innerHTML = "";
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var tr = document.createElement("tr");
+        var vals = [r.judet, r.luna, r.sub_25, r.v_25_29, r.v_30_39, r.v_40_49, r.v_50_55, r.peste_55];
+        for (var j = 0; j < vals.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = vals[j];
+            tr.appendChild(td);
+        }
+        body.appendChild(tr);
+    }
+}
+
+function afiseazaDateEducatie(data) {
+    setTableHeader(["Judet", "Luna", "Fara studii", "Primar", "Gimnazial", "Liceal", "Postliceal", "Profesional", "Universitar"]);
+    var body = document.getElementById("dataBody");
+    body.innerHTML = "";
+    for (var i = 0; i < data.length; i++) {
+        var r = data[i];
+        var tr = document.createElement("tr");
+        var vals = [r.judet, r.luna, r.fara_studii, r.primar, r.gimnazial, r.liceal, r.postliceal, r.profesional, r.universitar];
+        for (var j = 0; j < vals.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = vals[j];
+            tr.appendChild(td);
+        }
+        body.appendChild(tr);
+    }
+}
+
+function loadMediiData() {
+    var params = buildParams();
+    fetch("../api/getMediiData.php?" + params.toString())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.length === 0) { return; }
+            afiseazaDateMedii(data);
+
+            var judete = [];
+            var urban  = [];
+            var rural  = [];
+            var totalUrban = 0;
+            var totalRural = 0;
+
+            var agregate = {};
+            for (var i = 0; i < data.length; i++) {
+                var j = data[i].judet;
+                if (!agregate[j]) { agregate[j] = {urban: 0, rural: 0}; }
+                agregate[j].urban += parseInt(data[i].urban_total);
+                agregate[j].rural += parseInt(data[i].rural_total);
+            }
+
+            for (var j in agregate) {
+                judete.push(j);
+                urban.push(agregate[j].urban);
+                rural.push(agregate[j].rural);
+                totalUrban += agregate[j].urban;
+                totalRural += agregate[j].rural;
+            }
+
+            if (mediiBarChart) { mediiBarChart.destroy(); }
+            mediiBarChart = new Chart(document.getElementById("mediiBarChart"), {
+                type: "bar",
+                data: {
+                    labels: judete,
+                    datasets: [
+                        {label: "Urban", data: urban, backgroundColor: "rgba(54,162,235,0.7)"},
+                        {label: "Rural", data: rural, backgroundColor: "rgba(255,159,64,0.7)"}
+                    ]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+
+            if (mediiPieChart) { mediiPieChart.destroy(); }
+            mediiPieChart = new Chart(document.getElementById("mediiPieChart"), {
+                type: "pie",
+                data: {
+                    labels: ["Urban", "Rural"],
+                    datasets: [{data: [totalUrban, totalRural]}]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        });
+}
+
+function loadVarsteData() {
+    var params = buildParams();
+    fetch("../api/getVarsteData.php?" + params.toString())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.length === 0) { return; }
+            afiseazaDateVarste(data);
+
+            var totale = {sub_25: 0, v_25_29: 0, v_30_39: 0, v_40_49: 0, v_50_55: 0, peste_55: 0};
+            for (var i = 0; i < data.length; i++) {
+                totale.sub_25   += parseInt(data[i].sub_25);
+                totale.v_25_29  += parseInt(data[i].v_25_29);
+                totale.v_30_39  += parseInt(data[i].v_30_39);
+                totale.v_40_49  += parseInt(data[i].v_40_49);
+                totale.v_50_55  += parseInt(data[i].v_50_55);
+                totale.peste_55 += parseInt(data[i].peste_55);
+            }
+
+            if (varsteChart) { varsteChart.destroy(); }
+            varsteChart = new Chart(document.getElementById("varsteChart"), {
+                type: "bar",
+                data: {
+                    labels: ["Sub 25 ani", "25-29 ani", "30-39 ani", "40-49 ani", "50-55 ani", "Peste 55 ani"],
+                    datasets: [{label: "Numar someri", data: [
+                        totale.sub_25, totale.v_25_29, totale.v_30_39,
+                        totale.v_40_49, totale.v_50_55, totale.peste_55
+                    ]}]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        });
+}
+
+function loadEducatieData() {
+    var params = buildParams();
+    fetch("../api/getEducatieData.php?" + params.toString())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.length === 0) { return; }
+            afiseazaDateEducatie(data);
+
+            var totale = {fara_studii: 0, primar: 0, gimnazial: 0, liceal: 0, postliceal: 0, profesional: 0, universitar: 0};
+            for (var i = 0; i < data.length; i++) {
+                totale.fara_studii  += parseInt(data[i].fara_studii);
+                totale.primar       += parseInt(data[i].primar);
+                totale.gimnazial    += parseInt(data[i].gimnazial);
+                totale.liceal       += parseInt(data[i].liceal);
+                totale.postliceal   += parseInt(data[i].postliceal);
+                totale.profesional  += parseInt(data[i].profesional);
+                totale.universitar  += parseInt(data[i].universitar);
+            }
+
+            if (educatieChart) { educatieChart.destroy(); }
+            educatieChart = new Chart(document.getElementById("educatieChart"), {
+                type: "bar",
+                data: {
+                    labels: ["Fara studii", "Primar", "Gimnazial", "Liceal", "Postliceal", "Profesional", "Universitar"],
+                    datasets: [{label: "Numar someri", data: [
+                        totale.fara_studii, totale.primar, totale.gimnazial,
+                        totale.liceal, totale.postliceal, totale.profesional, totale.universitar
+                    ]}]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        });
+}
+
+var tabBtns = document.querySelectorAll(".tab-btn");
+for (var ti = 0; ti < tabBtns.length; ti++) {
+    tabBtns[ti].addEventListener("click", function() {
+        for (var tj = 0; tj < tabBtns.length; tj++) {
+            tabBtns[tj].classList.remove("active");
+        }
+        this.classList.add("active");
+
+        var tabContents = document.querySelectorAll(".tab-content");
+        for (var tj = 0; tj < tabContents.length; tj++) {
+            tabContents[tj].style.display = "none";
+        }
+        document.getElementById("tab-" + this.getAttribute("data-tab")).style.display = "block";
+
+        var tab = this.getAttribute("data-tab");
+        if (tab === "rata")      { setTableHeader(["Judet", "Luna", "Total someri", "Femei", "Barbati", "Rata somajului (%)"]); loadData(); }
+        if (tab === "medii")     { loadMediiData(); }
+        if (tab === "varste")    { loadVarsteData(); }
+        if (tab === "educatie")  { loadEducatieData(); }
+    });
+}
+
 document.getElementById("filterButton").addEventListener("click", function() {
     loadData();
 });
