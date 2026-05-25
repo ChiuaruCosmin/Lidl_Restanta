@@ -49,6 +49,7 @@
         }
         #importBtn { margin-top: 10px; }
         #importBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #initBtn:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -59,6 +60,13 @@
             <a href="../public/index.html">Inapoi la aplicatie</a>
             <a id="logoutBtn">Deconectare</a>
         </div>
+    </div>
+
+    <div class="card">
+        <h2>Setup initial</h2>
+        <p>Foloseste acest buton la prima rulare a proiectului sau pentru a reseta complet baza de date. Sterge tabelele existente, le recreeaza si reimporta toate fisierele CSV.</p>
+        <button id="initBtn">Initializeaza baza de date</button>
+        <div id="initOutput" style="background:#f8f8f8;border:1px solid #ddd;padding:12px;font-family:monospace;font-size:13px;white-space:pre-wrap;max-height:300px;overflow-y:auto;display:none;margin-top:12px;"></div>
     </div>
 
     <div class="card">
@@ -157,6 +165,36 @@ document.getElementById('logoutBtn').addEventListener('click', function() {
     fetch('../api/admin_logout.php', { method: 'POST' })
         .then(function() {
             window.location.href = 'login.html';
+        });
+});
+
+document.getElementById('initBtn').addEventListener('click', function() {
+    var btn = this;
+    var output = document.getElementById('initOutput');
+    btn.disabled = true;
+    btn.textContent = 'Se initializeaza...';
+    output.style.display = 'block';
+    output.textContent = 'Se ruleaza initializarea...';
+
+    fetch('../api/admin_init.php', { method: 'POST' })
+        .then(function(r) {
+            if (r.status === 403) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            if (!data) return;
+            output.textContent = data.output || data.error || 'Eroare necunoscuta.';
+            btn.disabled = false;
+            btn.textContent = 'Initializeaza baza de date';
+            loadStats();
+        })
+        .catch(function() {
+            output.textContent = 'Eroare la initializare.';
+            btn.disabled = false;
+            btn.textContent = 'Initializeaza baza de date';
         });
 });
 
