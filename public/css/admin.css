@@ -1,0 +1,86 @@
+.login-box {
+    max-width: 360px;
+    margin: 80px auto;
+    padding: 30px;
+    border: 1px solid #dddddd;
+    background: #ffffff;
+}
+
+.login-box h2 { margin-top: 0; }
+
+.login-box label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    border: 1px solid #dddddd;
+}
+
+.login-box button { width: 100%; }
+
+.eroare {
+    color: #cc0000;
+    font-size: 14px;
+    margin-bottom: 12px;
+    display: none;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-header a {
+    font-size: 14px;
+    padding: 6px 14px;
+    border: 1px solid #dddddd;
+    text-decoration: none;
+    color: #222222;
+    background: #f2f2f2;
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.stats-table th,
+.stats-table td {
+    border-bottom: 1px solid #dddddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.stats-table th { background: #f2f2f2; }
+
+#importOutput,
+#initOutput {
+    background: #f8f8f8;
+    border: 1px solid #dddddd;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    margin-top: 12px;
+}
+
+#importBtn { margin-top: 10px; }
+#importBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+#initBtn:disabled { opacity: 0.6; cursor: not-allowed; }

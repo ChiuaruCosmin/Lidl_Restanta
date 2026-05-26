@@ -5,52 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - UnD</title>
     <link rel="stylesheet" href="../public/css/style.css">
-    <style>
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .admin-header a {
-            font-size: 14px;
-            padding: 6px 14px;
-            border: 1px solid #ddd;
-            text-decoration: none;
-            color: #222;
-            background: #f2f2f2;
-            margin-left: 6px;
-            cursor: pointer;
-        }
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .stats-table th,
-        .stats-table td {
-            border-bottom: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            font-size: 14px;
-        }
-        .stats-table th { background: #f2f2f2; }
-        #importOutput {
-            background: #f8f8f8;
-            border: 1px solid #ddd;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            max-height: 300px;
-            overflow-y: auto;
-            display: none;
-            margin-top: 12px;
-        }
-        #importBtn { margin-top: 10px; }
-        #importBtn:disabled { opacity: 0.6; cursor: not-allowed; }
-        #initBtn:disabled { opacity: 0.6; cursor: not-allowed; }
-    </style>
+    <link rel="stylesheet" href="../public/css/admin.css">
 </head>
 <body>
 <div class="container">
@@ -66,7 +21,7 @@
         <h2>Setup initial</h2>
         <p>Foloseste acest buton la prima rulare a proiectului sau pentru a reseta complet baza de date. Sterge tabelele existente, le recreeaza si reimporta toate fisierele CSV.</p>
         <button id="initBtn">Initializeaza baza de date</button>
-        <div id="initOutput" style="background:#f8f8f8;border:1px solid #ddd;padding:12px;font-family:monospace;font-size:13px;white-space:pre-wrap;max-height:300px;overflow-y:auto;display:none;margin-top:12px;"></div>
+        <div id="initOutput"></div>
     </div>
 
     <div class="card">
