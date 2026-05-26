@@ -25,6 +25,20 @@ UnD este o aplicație Web pentru vizualizarea datelor publice despre șomajul di
   LICENSE
 ```
 
+## Arhitectura aplicației
+
+**Diagrama de context (C4 – Nivel 1)**
+
+![Diagrama de context](public/img/c4_context.png)
+
+**Diagrama containerelor (C4 – Nivel 2)**
+
+![Diagrama containerelor](public/img/c4_containerelor.png)
+
+**Diagrama componentelor (C4 – Nivel 3)**
+
+![Diagrama componentelor](public/img/c4_componentelor.png)
+
 ## Cum rulez local
 
 1. Instalează XAMPP
@@ -59,7 +73,7 @@ Sursa datelor: https://data.gov.ro
 ## Securitate
 
 - Interogările SQL folosesc prepared statements (protecție SQL Injection)
-- Datele afișate în HTML sunt escapate cu `htmlspecialchars` (protecție XSS)
+- Datele dinamice sunt inserate în DOM prin `textContent` (nu `innerHTML`), prevenind XSS
 - Modulul de administrare este protejat prin autentificare cu sesiuni PHP
 
 ## Licență

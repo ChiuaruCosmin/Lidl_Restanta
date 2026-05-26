@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raport – UnD Unemployment Data Visualizer</title>
+    <link rel="stylesheet" href="css/report.css">
+</head>
+<body>
+<div class="wrapper">
+
+    <a href="index.html" class="nav-back">← Inapoi la aplicatie</a>
+
+    <h1>UnD — Unemployment Data Visualizer</h1>
+    <p class="meta">Raport tehnic · Proiect Tehnologii Web · Facultatea de Informatică, UAIC Iași · 2025–2026</p>
+
+    <div class="authors-bar">
+        <strong>Autori:</strong> Albert Andreea, Chiuaru Cosmin — Grupa 3A3
+    </div>
+
+    <div class="abstract">
+        <strong>Abstract.</strong>
+        UnD este o aplicație web pentru vizualizarea datelor publice despre șomajul din România,
+        acoperind 17 luni (ianuarie 2024 – mai 2025). Permite filtrarea după județ, perioadă,
+        mediu urban/rural, grupă de vârstă și nivel de educație, cu grafice interactive și o hartă
+        coroplețică. Exportul este disponibil în CSV, JSON, SVG și PDF.
+        Back-end-ul este implementat în PHP cu SQLite, fără framework-uri.
+    </div>
+
+    <h2>1. Introducere</h2>
+    <p>
+        Datele privind rata șomajului sunt publicate lunar de ANOFM și disponibile pe
+        <a href="https://data.gov.ro" target="_blank">data.gov.ro</a>, însă sub o formă
+        dificil de explorat pentru publicul general. Aplicația <em>UnD</em> oferă o interfață
+        web interactivă care nu necesită cunoștințe tehnice, permițând oricui să filtreze și
+        să compare aceste date pe mai multe criterii.
+    </p>
+
+    <h2>2. Cerințe</h2>
+
+    <h3>2.1 Cerințe funcționale</h3>
+    <table>
+        <thead>
+            <tr><th style="width:80px">ID</th><th>Descriere</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>RF-01</code></td><td>Vizualizarea datelor filtrate după județ și interval de timp (17 luni disponibile)</td></tr>
+            <tr><td><code>RF-02</code></td><td>Comparare multi-criterială: urban/rural, grupă de vârstă, nivel de educație</td></tr>
+            <tr><td><code>RF-03</code></td><td>Minimum 3 tipuri de grafice: bare, liniar, circular (plus bare grupate)</td></tr>
+            <tr><td><code>RF-04</code></td><td>Hartă coroplețică interactivă a României cu rata șomajului pe județe</td></tr>
+            <tr><td><code>RF-05</code></td><td>Export în CSV, JSON, SVG și PDF</td></tr>
+            <tr><td><code>RF-06</code></td><td>Modul de administrare: inițializare BD, import CSV, statistici tabele</td></tr>
+            <tr><td><code>RF-07</code></td><td>Statistici sumare: total șomeri, rată medie / maximă / minimă</td></tr>
+        </tbody>
+    </table>
+
+    <h3>2.2 Cerințe non-funcționale</h3>
+    <ul>
+        <li><strong>Responsive design</strong> — breakpoint-uri la 500px, 700px, 900px</li>
+        <li><strong>Securitate</strong> — SQL Injection prevenit prin <code>PDO::prepare()</code>; XSS prevenit prin folosirea <code>textContent</code> în JavaScript și returnarea de JSON pur din API</li>
+        <li><strong>Arhitectură bazată pe servicii Web</strong> — comunicare client-server exclusiv prin AJAX (<code>fetch()</code>)</li>
+        <li><strong>Fără framework-uri</strong> — JavaScript vanilla pe client, PHP pur pe server</li>
+        <li><strong>Licență liberă</strong> — MIT</li>
+    </ul>
+
+    <h3>2.3 Fluxul utilizatorului</h3>
+    <ol>
+        <li>Selectează județele dorite din lista multi-select</li>
+        <li>Setează intervalul temporal cu selectoare de tip <code>month</code></li>
+        <li>Apasă „Aplică filtre" — datele se actualizează asincron</li>
+        <li>Navighează între tab-uri (Rată, Urban/Rural, Vârste, Educație)</li>
+        <li>Consultă harta coroplețică și statisticile sumare</li>
+        <li>Exportă datele sau graficele în formatul dorit</li>
+    </ol>
+
+    <h2>3. Sursa și structura datelor</h2>
+    <p>
+        Datele provin de pe <strong>data.gov.ro</strong> (ANOFM) și acoperă
+        <strong>ianuarie 2024 – mai 2025</strong> (17 luni). Sunt stocate ca fișiere CSV în
+        directorul <code>/data/</code> și importate în SQLite la inițializare prin
+        <code>api/import_csv.php</code>.
+    </p>
+    <table>
+        <thead>
+            <tr><th>Fișier CSV</th><th>Tabel SQLite</th><th>Câmpuri principale</th><th>Perioadă</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>somaj_YYYY_MM_rata.csv</code></td>
+                <td><code>unemployment</code></td>
+                <td>judet, luna, numar_total, femei, barbati, rata, rata_feminina, rata_masculina</td>
+                <td>ian 2024 – mai 2025</td>
+            </tr>
+            <tr>
+                <td><code>somaj_YYYY_MM_medii.csv</code></td>
+                <td><code>somaj_medii</code></td>
+                <td>judet, luna, urban_total, urban_femei, rural_total, rural_femei</td>
+                <td>dec 2024 – mai 2025</td>
+            </tr>
+            <tr>
+                <td><code>somaj_YYYY_MM_varste.csv</code></td>
+                <td><code>somaj_varste</code></td>
+                <td>judet, luna, sub_25, v_25_29, v_30_39, v_40_49, v_50_55, peste_55</td>
+                <td>dec 2024 – mai 2025</td>
+            </tr>
+            <tr>
+                <td><code>somaj_YYYY_MM_nivel-educatie.csv</code></td>
+                <td><code>somaj_educatie</code></td>
+                <td>judet, luna, fara_studii, primar, gimnazial, liceal, postliceal, profesional, universitar</td>
+                <td>dec 2024 – mai 2025</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Arhitectura aplicației</h2>
+    <p>
+        Aplicația urmează arhitectura clasică <strong>client–server</strong>, cu comunicare exclusiv prin
+        apeluri AJAX asincrone. Nu se folosesc framework-uri pe nicio parte; tot codul rulează pe PHP cu
+        PDO și SQLite pe server, respectiv JavaScript vanilla pe client.
+    </p>
+
+    <h3>4.1 Diagrama de context (C4 – Nivel 1)</h3>
+    <div class="diagram-box">
+        <div class="diagram-label">Figura 1 — cine folosește sistemul și cu ce servicii externe interacționează</div>
+        <img src="img/c4_context.png" alt="Diagrama de context C4 – Nivel 1">
+    </div>
+
+    <h3>4.2 Diagrama containerelor (C4 – Nivel 2)</h3>
+    <div class="diagram-box">
+        <div class="diagram-label">Figura 2 — componentele tehnice principale ale sistemului</div>
+        <img src="img/c4_containerelor.png" alt="Diagrama containerelor C4 – Nivel 2">
+    </div>
+
+    <h3>4.3 Diagrama componentelor (C4 – Nivel 3)</h3>
+    <div class="diagram-box">
+        <div class="diagram-label">Figura 3 — endpoint-urile PHP și relațiile cu baza de date</div>
+        <img src="img/c4_componentelor.png" alt="Diagrama componentelor C4 – Nivel 3">
+    </div>
+
+    <h3>4.4 Structura directoarelor</h3>
+    <pre><code>/
+├── admin/           ← modul administrare (HTML + PHP)
+├── api/             ← endpoint-uri REST PHP
+│   ├── getData.php, getStats.php, getMapData.php
+│   ├── getMediiData.php, getVarsteData.php, getEducatieData.php
+│   ├── export.php, import_csv.php
+│   └── admin_login, admin_logout, admin_init, admin_import, admin_stats
+├── config/db.php    ← conexiune PDO SQLite
+├── data/            ← 68 fișiere CSV (ANOFM)
+├── database/und.sqlite
+└── public/
+    ├── index.html
+    ├── report.html
+    ├── css/style.css
+    └── js/app.js</code></pre>
+
+    <h2>5. Implementare</h2>
+
+    <h3>5.1 Grafice (Chart.js)</h3>
+    <table>
+        <thead>
+            <tr><th>Tip</th><th>Date vizualizate</th><th>Tab</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Bar chart</td><td>Rata șomajului pe județe (luna cea mai recentă)</td><td>Rată</td></tr>
+            <tr><td>Line chart</td><td>Evoluție temporală a ratei medii</td><td>Rată</td></tr>
+            <tr><td>Pie chart</td><td>Distribuție femei / bărbați</td><td>Rată</td></tr>
+            <tr><td>Grouped bar</td><td>Urban vs. Rural pe județe</td><td>Urban/Rural</td></tr>
+            <tr><td>Pie chart</td><td>Total Urban vs. Rural agregat</td><td>Urban/Rural</td></tr>
+            <tr><td>Bar chart</td><td>Șomeri pe grupe de vârstă (agregat)</td><td>Vârste</td></tr>
+            <tr><td>Bar chart</td><td>Șomeri pe nivel de educație (agregat)</td><td>Educație</td></tr>
+        </tbody>
+    </table>
+
+    <h3>5.2 Hartă coroplețică (Leaflet.js)</h3>
+    <p>
+        Fiecare județ este reprezentat printr-un <code>circleMarker</code> poziționat la coordonatele
+        geografice ale județului. Culoarea fiecărui marker este calculată dinamic pe baza ratei
+        șomajului pentru luna curentă, folosind un gradient de la galben (rată mică) la roșu
+        (rată mare). Tile-urile provin de la OpenStreetMap via Leaflet.js.
+    </p>
+
+    <h3>5.3 Export</h3>
+    <ul>
+        <li><strong>CSV / JSON</strong> — generate server-side de <code>export.php</code>, cu filtrele active aplicate</li>
+        <li><strong>SVG</strong> — generat client-side prin capturarea canvas-urilor Chart.js ale tab-ului activ, înglobate într-un fișier SVG</li>
+        <li><strong>PDF</strong> — prin <code>window.print()</code> cu reguli <code>@media print</code> în CSS</li>
+    </ul>
+
+    <h3>5.4 Securitate</h3>
+    <ul>
+        <li><strong>SQL Injection</strong> — toate query-urile folosesc <code>PDO::prepare()</code> cu parametri legați; nicio valoare din input nu este interpolată direct în SQL</li>
+        <li><strong>XSS</strong> — API-urile returnează exclusiv JSON; în JavaScript, datele dinamice sunt inserate în DOM prin <code>textContent</code> (nu <code>innerHTML</code>), eliminând posibilitatea de injectare HTML</li>
+        <li><strong>Autentificare admin</strong> — sesiune PHP verificată pe fiecare endpoint administrativ; răspuns 403 la acces neautorizat</li>
+    </ul>
+
+    <h2>6. Concluzii</h2>
+    <p>
+        Aplicația UnD acoperă cerințele proiectului: 17 luni de date, filtrare multi-criterială,
+        7 tipuri de grafice, hartă coroplețică, export în 4 formate și modul de administrare complet.
+        Implementarea fără framework-uri a necesitat înțelegerea mecanismelor fundamentale: HTTP,
+        AJAX, REST, SQL, sesiuni PHP și manipularea DOM-ului din JavaScript.
+    </p>
+
+    <h2>7. Referințe</h2>
+    <ol>
+        <li>Date șomaj România — <a href="https://data.gov.ro" target="_blank">data.gov.ro</a> (ANOFM)</li>
+        <li>Chart.js Documentation — <a href="https://www.chartjs.org/docs/" target="_blank">chartjs.org/docs</a></li>
+        <li>Leaflet.js Documentation — <a href="https://leafletjs.com/reference.html" target="_blank">leafletjs.com</a></li>
+        <li>PHP Manual — <a href="https://www.php.net/manual/" target="_blank">php.net/manual</a></li>
+        <li>SQLite Documentation — <a href="https://www.sqlite.org/docs.html" target="_blank">sqlite.org/docs</a></li>
+        <li>C4 Model for Software Architecture — <a href="https://c4model.com" target="_blank">c4model.com</a></li>
+    </ol>
+
+</div>
+</body>
+</html>

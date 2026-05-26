@@ -2,6 +2,38 @@ let barChart = null;
 let lineChart = null;
 let pieChart = null;
 
+var paginareDate = [];
+var paginaCurenta = 1;
+var ROWS_PER_PAGE = 20;
+var paginareRenderer = null;
+var tabActiv = "rata";
+
+function randeazaTabelPagina() {
+    var body = document.getElementById("dataBody");
+    body.innerHTML = "";
+
+    var totalPagini = Math.max(1, Math.ceil(paginareDate.length / ROWS_PER_PAGE));
+    var start = (paginaCurenta - 1) * ROWS_PER_PAGE;
+    var end = Math.min(start + ROWS_PER_PAGE, paginareDate.length);
+
+    for (var i = start; i < end; i++) {
+        var vals = paginareRenderer(paginareDate[i]);
+        var tr = document.createElement("tr");
+        for (var j = 0; j < vals.length; j++) {
+            var td = document.createElement("td");
+            td.textContent = vals[j];
+            tr.appendChild(td);
+        }
+        body.appendChild(tr);
+    }
+
+    document.getElementById("paginaInfo").textContent =
+        "Pagina " + paginaCurenta + " din " + totalPagini +
+        " (" + paginareDate.length + " randuri total)";
+    document.getElementById("btnPrev").disabled = paginaCurenta <= 1;
+    document.getElementById("btnNext").disabled = paginaCurenta >= totalPagini;
+}
+
 function buildParams() {
     let judetSelect = document.getElementById("judetSelect");
     let lunaStart = document.getElementById("lunaStart").value;
@@ -113,39 +145,12 @@ function afiseazaStatistici(stats) {
 }
 
 function afiseazaDate(data) {
-    let body = document.getElementById("dataBody");
-    body.textContent = "";
-
-    for (let i = 0; i < data.length; i++) {
-        let row = document.createElement("tr");
-
-        let judetCell = document.createElement("td");
-        judetCell.textContent = data[i].judet;
-
-        let lunaCell = document.createElement("td");
-        lunaCell.textContent = data[i].luna;
-
-        let totalCell = document.createElement("td");
-        totalCell.textContent = data[i].numar_total;
-
-        let femeiCell = document.createElement("td");
-        femeiCell.textContent = data[i].numar_femei;
-
-        let barbatiCell = document.createElement("td");
-        barbatiCell.textContent = data[i].numar_barbati;
-
-        let rataCell = document.createElement("td");
-        rataCell.textContent = data[i].rata;
-
-        row.appendChild(judetCell);
-        row.appendChild(lunaCell);
-        row.appendChild(totalCell);
-        row.appendChild(femeiCell);
-        row.appendChild(barbatiCell);
-        row.appendChild(rataCell);
-
-        body.appendChild(row);
-    }
+    paginareDate = data;
+    paginaCurenta = 1;
+    paginareRenderer = function(r) {
+        return [r.judet, r.luna, r.numar_total, r.numar_femei, r.numar_barbati, r.rata];
+    };
+    randeazaTabelPagina();
 }
 
 function deseneazaGrafice(data) {
@@ -285,10 +290,11 @@ function deseneazaPieChart(data) {
 function exportData(format) {
     let params = buildParams();
     params.append("format", format);
+    params.append("tab", tabActiv);
 
     let a = document.createElement("a");
     a.href = "../api/export.php?" + params.toString();
-    a.download = "somaj_export." + format;
+    a.download = "somaj_" + tabActiv + "_export." + format;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -313,53 +319,32 @@ function setTableHeader(coloane) {
 
 function afiseazaDateMedii(data) {
     setTableHeader(["Judet", "Luna", "Urban Total", "Urban Femei", "Urban Barbati", "Rural Total", "Rural Femei", "Rural Barbati"]);
-    var body = document.getElementById("dataBody");
-    body.innerHTML = "";
-    for (var i = 0; i < data.length; i++) {
-        var r = data[i];
-        var tr = document.createElement("tr");
-        var vals = [r.judet, r.luna, r.urban_total, r.urban_femei, r.urban_barbati, r.rural_total, r.rural_femei, r.rural_barbati];
-        for (var j = 0; j < vals.length; j++) {
-            var td = document.createElement("td");
-            td.textContent = vals[j];
-            tr.appendChild(td);
-        }
-        body.appendChild(tr);
-    }
+    paginareDate = data;
+    paginaCurenta = 1;
+    paginareRenderer = function(r) {
+        return [r.judet, r.luna, r.urban_total, r.urban_femei, r.urban_barbati, r.rural_total, r.rural_femei, r.rural_barbati];
+    };
+    randeazaTabelPagina();
 }
 
 function afiseazaDateVarste(data) {
     setTableHeader(["Judet", "Luna", "Sub 25", "25-29", "30-39", "40-49", "50-55", "Peste 55"]);
-    var body = document.getElementById("dataBody");
-    body.innerHTML = "";
-    for (var i = 0; i < data.length; i++) {
-        var r = data[i];
-        var tr = document.createElement("tr");
-        var vals = [r.judet, r.luna, r.sub_25, r.v_25_29, r.v_30_39, r.v_40_49, r.v_50_55, r.peste_55];
-        for (var j = 0; j < vals.length; j++) {
-            var td = document.createElement("td");
-            td.textContent = vals[j];
-            tr.appendChild(td);
-        }
-        body.appendChild(tr);
-    }
+    paginareDate = data;
+    paginaCurenta = 1;
+    paginareRenderer = function(r) {
+        return [r.judet, r.luna, r.sub_25, r.v_25_29, r.v_30_39, r.v_40_49, r.v_50_55, r.peste_55];
+    };
+    randeazaTabelPagina();
 }
 
 function afiseazaDateEducatie(data) {
     setTableHeader(["Judet", "Luna", "Fara studii", "Primar", "Gimnazial", "Liceal", "Postliceal", "Profesional", "Universitar"]);
-    var body = document.getElementById("dataBody");
-    body.innerHTML = "";
-    for (var i = 0; i < data.length; i++) {
-        var r = data[i];
-        var tr = document.createElement("tr");
-        var vals = [r.judet, r.luna, r.fara_studii, r.primar, r.gimnazial, r.liceal, r.postliceal, r.profesional, r.universitar];
-        for (var j = 0; j < vals.length; j++) {
-            var td = document.createElement("td");
-            td.textContent = vals[j];
-            tr.appendChild(td);
-        }
-        body.appendChild(tr);
-    }
+    paginareDate = data;
+    paginaCurenta = 1;
+    paginareRenderer = function(r) {
+        return [r.judet, r.luna, r.fara_studii, r.primar, r.gimnazial, r.liceal, r.postliceal, r.profesional, r.universitar];
+    };
+    randeazaTabelPagina();
 }
 
 function loadMediiData() {
@@ -414,6 +399,8 @@ function loadMediiData() {
                 },
                 options: {responsive: true, maintainAspectRatio: false}
             });
+
+            loadStats();
         });
 }
 
@@ -447,6 +434,8 @@ function loadVarsteData() {
                 },
                 options: {responsive: true, maintainAspectRatio: false}
             });
+
+            loadStats();
         });
 }
 
@@ -481,6 +470,8 @@ function loadEducatieData() {
                 },
                 options: {responsive: true, maintainAspectRatio: false}
             });
+
+            loadStats();
         });
 }
 
@@ -499,6 +490,7 @@ for (var ti = 0; ti < tabBtns.length; ti++) {
         document.getElementById("tab-" + this.getAttribute("data-tab")).style.display = "block";
 
         var tab = this.getAttribute("data-tab");
+        tabActiv = tab;
         if (tab === "rata")      { setTableHeader(["Judet", "Luna", "Total someri", "Femei", "Barbati", "Rata somajului (%)"]); loadData(); }
         if (tab === "medii")     { loadMediiData(); }
         if (tab === "varste")    { loadVarsteData(); }
@@ -507,7 +499,21 @@ for (var ti = 0; ti < tabBtns.length; ti++) {
 }
 
 document.getElementById("filterButton").addEventListener("click", function() {
-    loadData();
+    var cols = {
+        rata:      6,
+        medii:     8,
+        varste:    8,
+        educatie:  9
+    };
+    var colspan = cols[tabActiv] || 6;
+    document.getElementById("dataBody").innerHTML =
+        '<tr><td colspan="' + colspan + '" style="text-align:center;color:#888;padding:16px;">Se incarca...</td></tr>';
+    document.getElementById("paginaInfo").textContent = "";
+
+    if (tabActiv === "rata")     { loadData(); }
+    if (tabActiv === "medii")    { loadMediiData(); }
+    if (tabActiv === "varste")   { loadVarsteData(); }
+    if (tabActiv === "educatie") { loadEducatieData(); }
 });
 
 var hartaLeaflet = null;
@@ -570,14 +576,14 @@ function normalizeJudet(s) {
 }
 
 function getColor(t) {
-    var r, g, b;
+    var r, g, b, s;
     if (t < 0.5) {
-        var s = t * 2;
+        s = t * 2;
         r = Math.round(255 + s * (253 - 255));
         g = Math.round(255 + s * (141 - 255));
         b = Math.round(178 + s * (60 - 178));
     } else {
-        var s = (t - 0.5) * 2;
+        s = (t - 0.5) * 2;
         r = Math.round(253 + s * (189 - 253));
         g = Math.round(141 + s * (0 - 141));
         b = Math.round(60 + s * (38 - 60));
@@ -649,37 +655,43 @@ function loadMapData() {
 }
 
 function exportSVG() {
-    let charts = [
-        document.getElementById("barChart"),
-        document.getElementById("lineChart"),
-        document.getElementById("pieChart")
-    ];
+    var chartIds = {
+        rata:     ["barChart", "lineChart", "pieChart"],
+        medii:    ["mediiBarChart", "mediiPieChart"],
+        varste:   ["varsteChart"],
+        educatie: ["educatieChart"]
+    };
 
-    let totalHeight = 0;
-    let maxWidth = 0;
+    var ids = chartIds[tabActiv] || chartIds["rata"];
+    var charts = [];
+    for (var i = 0; i < ids.length; i++) {
+        charts.push(document.getElementById(ids[i]));
+    }
 
-    for (let i = 0; i < charts.length; i++) {
+    var totalHeight = 0;
+    var maxWidth = 0;
+    for (var i = 0; i < charts.length; i++) {
         totalHeight += charts[i].height + 10;
         if (charts[i].width > maxWidth) {
             maxWidth = charts[i].width;
         }
     }
 
-    let svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + maxWidth + '" height="' + totalHeight + '">'];
+    var svgParts = ['<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="' + maxWidth + '" height="' + totalHeight + '">'];
 
-    let yOffset = 0;
-    for (let i = 0; i < charts.length; i++) {
-        let c = charts[i];
+    var yOffset = 0;
+    for (var i = 0; i < charts.length; i++) {
+        var c = charts[i];
         svgParts.push('<image href="' + c.toDataURL("image/png") + '" x="0" y="' + yOffset + '" width="' + c.width + '" height="' + c.height + '"/>');
         yOffset += c.height + 10;
     }
 
     svgParts.push("</svg>");
 
-    let blob = new Blob([svgParts.join("\n")], { type: "image/svg+xml" });
-    let a = document.createElement("a");
+    var blob = new Blob([svgParts.join("\n")], { type: "image/svg+xml" });
+    var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "grafice_somaj.svg";
+    a.download = "grafice_somaj_" + tabActiv + ".svg";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -700,6 +712,21 @@ document.getElementById("exportSvgBtn").addEventListener("click", function() {
 
 document.getElementById("exportPdfBtn").addEventListener("click", function() {
     window.print();
+});
+
+document.getElementById("btnPrev").addEventListener("click", function() {
+    if (paginaCurenta > 1) {
+        paginaCurenta--;
+        randeazaTabelPagina();
+    }
+});
+
+document.getElementById("btnNext").addEventListener("click", function() {
+    var totalPagini = Math.ceil(paginareDate.length / ROWS_PER_PAGE);
+    if (paginaCurenta < totalPagini) {
+        paginaCurenta++;
+        randeazaTabelPagina();
+    }
 });
 
 loadInitialData();

@@ -219,6 +219,18 @@ th {
     background-color: #f2f2f2;
 }
 
+.paginare {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.paginare span {
+    color: #555555;
+}
+
 @media print {
     .filters,
     .export-buttons,

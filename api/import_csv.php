@@ -45,6 +45,40 @@ function detectDelimiter($filePath) {
 function cleanJudet($value) {
     $value = trim($value);
     $value = preg_replace('/^\xEF\xBB\xBF/', '', $value);
+
+    $diacritice = [
+        'ă' => 'a', 'â' => 'a', 'î' => 'i',
+        'ș' => 's', 'ş' => 's', 'Ș' => 'S', 'Ş' => 'S',
+        'ț' => 't', 'ţ' => 't', 'Ț' => 'T', 'Ţ' => 'T',
+        'Ă' => 'A', 'Â' => 'A', 'Î' => 'I',
+        'Š' => 'S', 'š' => 's',
+    ];
+    $value = strtr($value, $diacritice);
+
+    $value = str_replace('?', 'S', $value);
+
+    $value = preg_replace('/[^\x00-\x7F]/', '', $value);
+
+    $value = strtoupper($value);
+
+    if (strpos($value, 'BUCURESTI') !== false || strpos($value, 'BUC.') !== false) {
+        return 'MUNICIPIUL BUCURESTI';
+    }
+
+    $normalizari = [
+        'BISTRITA-NASAUD' => 'BISTRITA NASAUD',
+        'BISTRITA'        => 'BISTRITA NASAUD',
+        'CARA-SEVERIN'    => 'CARAS-SEVERIN',
+        'CARAS SEVERIN'   => 'CARAS-SEVERIN',
+        'CARAS'           => 'CARAS-SEVERIN',
+        'SATU-MARE'       => 'SATU MARE',
+        'SATU M.'         => 'SATU MARE',
+    ];
+
+    if (isset($normalizari[$value])) {
+        $value = $normalizari[$value];
+    }
+
     return $value;
 }
 
@@ -84,7 +118,7 @@ function importRata($db, $files) {
                 continue;
             }
             $judet = cleanJudet($row[0]);
-            if ($judet === "" || strtolower($judet) === "total") {
+            if ($judet === "" || strpos($judet, 'TOTAL') === 0) {
                 continue;
             }
 
@@ -146,7 +180,7 @@ function importMedii($db, $files) {
                 continue;
             }
             $judet = cleanJudet($row[0]);
-            if ($judet === "" || strtolower($judet) === "total") {
+            if ($judet === "" || strpos($judet, 'TOTAL') === 0) {
                 continue;
             }
 
@@ -209,7 +243,7 @@ function importVarste($db, $files) {
                 continue;
             }
             $judet = cleanJudet($row[0]);
-            if ($judet === "" || strtolower($judet) === "total") {
+            if ($judet === "" || strpos($judet, 'TOTAL') === 0) {
                 continue;
             }
 
@@ -274,7 +308,7 @@ function importEducatie($db, $files) {
                 continue;
             }
             $judet = cleanJudet($row[0]);
-            if ($judet === "" || strtolower($judet) === "total") {
+            if ($judet === "" || strpos($judet, 'TOTAL') === 0) {
                 continue;
             }
 
